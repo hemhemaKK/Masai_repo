@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Throttled Image Slider with Spam Detection</title>
+</head>
+<body>
+    <center><h1>PThrottled Image Slider with Spam Detection</h1></center>
+
+    <button onclick="throttlefetch()">Load Image</button>
+    <div id="pictures"></div>
+</body>
+</html>
+<script>
+    let lastclick = 0;
+    let throttleDelay = 3000;
+    
+    async function fetchData(){
+        
+        try {
+            let data = `https://picsum.photos/200/300?random=${Date.now()}`;
+            let image = document.createElement('img');
+            image.src = data
+            image.alt = "Random Images";
+            image.style.margin = '10px';
+            document.getElementById("pictures").innerHTML = '';
+            document.getElementById("pictures").appendChild(image);
+        } catch (error) {
+            document.getElementById('pictures').innerHTML = "Failed to Load the data"
+            console.log(error)
+        }
+    }
+    function throttlefetch(){
+         let now = Date.now();
+         if(now-lastclick < throttleDelay){
+            alert("chill chill, loading it!");
+            return
+         }
+         lastclick = now;
+         fetchData()
+    }
+</script>
