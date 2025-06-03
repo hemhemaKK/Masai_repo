@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implement Debounced Search with OMDB API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        #movieList {
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+        }
+       img{
+            width: 80%;
+            height: 80%;
+            border-radius: 10px;
+            margin: 10px;
+        }
+        .searchinput{
+            margin: auto;
+            background-color: chocolate;
+            width: 70%;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        #search{
+            padding: 10px;
+            border-radius: 10px;
+            background-color: aquamarine;
+            font-size: medium;
+            border: none;
+        }
+        button{
+            background-color: rgb(111, 109, 109);
+            padding: 10px;
+            border-radius: 10px;
+            color: aliceblue;
+            font-weight:bold;
+            font-size: medium;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+        <h1>Implement Debounced Search with OMDB API</h1>
+    </center>
+    <br><br><br>
+    <div class="searchinput">
+        <input type="text" id="search" placeholder="search any movies">
+    </div><br><br><br>
+    <div id="movieList"></div>
+</body>
+
+</html>
+<script>
+    let API_KEY = "66de588"
+    let debouncingTime;
+
+    document.getElementById('search').addEventListener('input',()=>{
+        debounce(searchinput, 500);
+    });
+    function debounce(func, delay){
+        clearTimeout(debouncingTime);
+        debouncingTime = setTimeout(func, delay);
+    }
+    async function searchinput() {
+        let search = document.getElementById('search').value;
+        let res = await fetch(`http://www.omdbapi.com/?apikey=${API_KEY}&s=${search}`);
+        let data = await res.json()
+
+        // console.log(data.Search)
+        let container = document.getElementById('movieList');
+        container.innerHTML = ''
+
+        if (data.Search) {
+            data.Search.forEach((movie) => {
+                let moviecard = document.createElement('div')
+                moviecard.innerHTML = `
+                    
+                    <img src="${movie.Poster}" alt="${movie.Title}">
+                    <center><h3>${movie.Title}(${movie.Year})</h3></center>`
+
+                container.appendChild(moviecard)
+            });
+        }
+        else {
+            container.innerHTML = "<p>No Data Found</p>"
+        }
+    }
+</script>

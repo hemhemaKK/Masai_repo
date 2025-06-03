@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admn Pannel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        #logout-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        #logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #logout-btn:hover {
+            background-color: #c0392b;
+        }
+
+        input{
+            padding: 10px;
+            border: none;
+            box-shadow:rgba(100, 100, 111, 0.9) 0px 7px 29px 0px;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 10px;
+        }
+        button{
+            padding: 10px;
+            background-color: #3498db;
+            border: none;
+            box-shadow:rgba(100, 100, 111, 0.9) 0px 7px 29px 0px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 10px;
+            border-radius: 10px;
+        }
+        #productList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .productCard {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        .productCard:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .productCard img {
+            width: 100%;
+            height: 180px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            background-color: #f2f2f2;
+        }
+
+        .productCard h3 {
+            font-size: 16px;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .productCard p {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .productCard button {
+            margin: 5px;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .edit-btn {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+        <h1>Admin Dashboard</h1>
+    </center>
+
+    <!-- Logout -->
+    <div id="logout-container">
+        <h3><span id="user-email"></span><span id="user-role"></span></h3>
+        <button id="logout-btn">Logout</button>
+    </div>
+
+    <div id="product-container">
+        <input type="text" id="title" placeholder="Title">
+        <input type="number" id="price" placeholder="Price">
+        <input type="text" id="image" placeholder="Image URL">
+        <button id="addProduct">Add Product</button>
+    </div>
+
+    <ul id="productList"></ul>
+
+
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged,
+        } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+        import {
+            getDatabase, ref, push, set, onValue, remove, update
+        } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqfJUI0Orck3nDCB2Ulm-AgiZcWV92KcM",
+            authDomain: "democheck-c2d99.firebaseapp.com",
+            databaseURL: "https://democheck-c2d99-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "democheck-c2d99",
+            storageBucket: "democheck-c2d99.firebasestorage.app",
+            messagingSenderId: "870409634136",
+            appId: "1:870409634136:web:68bad3814e92012d7ae52d",
+            measurementId: "G-KB6RD571R1"
+        };
+
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        if (sessionStorage.getItem("role") !== "admin") {
+            window.location.href = "dashboard.html";
+        }
+
+        document.getElementById("addProduct").addEventListener("click", () => {
+            const title = document.getElementById("title").value.trim();
+            const price = document.getElementById("price").value.trim();
+            const image = document.getElementById("image").value.trim();
+
+            if (!title || !price || !image) {
+                alert("Please fill all fields");
+                return;
+            }
+
+            const productRef = push(ref(db, "products"));
+            set(productRef, { title, price, image });
+
+            // Clear inputs after adding
+            document.getElementById("title").value = "";
+            document.getElementById("price").value = "";
+            document.getElementById("image").value = "";
+        });
+
+        onValue(ref(db, "products"), (snapshot) => {
+            const productList = document.getElementById("productList");
+            productList.innerHTML = "";
+            snapshot.forEach((child) => {
+                const data = child.val();
+                const card = document.createElement("div");
+                card.className = "productCard";
+
+                card.innerHTML = `
+      <img src="${data.image}" alt="${data.title}">
+      <h3>${data.title}</h3>
+      <p>$${data.price}</p>
+    `;
+
+                // Edit button
+                const editBtn = document.createElement("button");
+                editBtn.className = "edit-btn";
+                editBtn.textContent = "Edit";
+
+                // Delete button
+                const delBtn = document.createElement("button");
+                delBtn.className = "delete-btn";
+                delBtn.textContent = "Delete";
+
+                // Add buttons to card
+                card.appendChild(editBtn);
+                card.appendChild(delBtn);
+
+                // Handle Edit
+                editBtn.onclick = () => {
+                    const titleInput = document.createElement("input");
+                    titleInput.type = "text";
+                    titleInput.value = data.title;
+
+                    const priceInput = document.createElement("input");
+                    priceInput.type = "number";
+                    priceInput.value = data.price;
+
+                    const imageInput = document.createElement("input");
+                    imageInput.type = "text";
+                    imageInput.value = data.image;
+
+                    const saveBtn = document.createElement("button");
+                    saveBtn.textContent = "Save";
+                    saveBtn.className = "edit-btn";
+
+                    const cancelBtn = document.createElement("button");
+                    cancelBtn.textContent = "Cancel";
+                    cancelBtn.className = "delete-btn";
+
+                    card.innerHTML = "";
+                    card.appendChild(titleInput);
+                    card.appendChild(priceInput);
+                    card.appendChild(imageInput);
+                    card.appendChild(saveBtn);
+                    card.appendChild(cancelBtn);
+
+                    saveBtn.onclick = () => {
+                        const updatedTitle = titleInput.value.trim();
+                        const updatedPrice = priceInput.value.trim();
+                        const updatedImage = imageInput.value.trim();
+
+                        if (!updatedTitle || !updatedPrice || !updatedImage) {
+                            alert("All fields are required.");
+                            return;
+                        }
+
+                        update(ref(db, "products/" + child.key), {
+                            title: updatedTitle,
+                            price: updatedPrice,
+                            image: updatedImage,
+                        });
+                    };
+
+                    cancelBtn.onclick = () => location.reload(); // Simple reset
+                };
+
+                // Handle Delete
+                delBtn.onclick = () => {
+                    if (confirm("Are you sure you want to delete this product?")) {
+                        remove(ref(db, "products/" + child.key));
+                    }
+                };
+
+                productList.appendChild(card);
+            });
+        });
+
+
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener("click", async () => {
+            await signOut(auth)
+            alert("logged out successfully")
+            window.location.href = "index.html";
+        });
+    </script>
+
+</body>
+
+</html>

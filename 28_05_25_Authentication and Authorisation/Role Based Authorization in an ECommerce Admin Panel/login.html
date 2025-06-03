@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Auth</title>
+    <style>
+        #login-container {
+            background: #fff;
+            padding: 25px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 20px auto;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        #login-container h3 {
+            margin-bottom: 15px;
+            color: #4a90e2;
+        }
+
+        #login-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #login-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #login-container button:hover {
+            background-color: #357ab7;
+        }
+
+        #login-message {
+            color: red;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+        <h2>Firebase Authentication</h2>
+    </center>
+
+    <!-- Login -->
+    <div id="login-container">
+        <h3>Login</h3>
+        <input type="email" id="login-email" placeholder="Enter Email">
+        <input type="password" id="login-password" placeholder="Enter Password">
+        <button id="login-btn">Login</button>
+        <p id="login-message"></p>
+    </div>
+
+
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged,
+        } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+        import {
+            getDatabase, ref,get
+        } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqfJUI0Orck3nDCB2Ulm-AgiZcWV92KcM",
+            authDomain: "democheck-c2d99.firebaseapp.com",
+            databaseURL: "https://democheck-c2d99-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "democheck-c2d99",
+            storageBucket: "democheck-c2d99.firebasestorage.app",
+            messagingSenderId: "870409634136",
+            appId: "1:870409634136:web:68bad3814e92012d7ae52d",
+            measurementId: "G-KB6RD571R1"
+        };
+
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+
+        // Login
+        document.getElementById("login-btn").addEventListener("click", async () => {
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
+        const snapshot = await get(ref(db, 'users/' + uid));
+        const role = snapshot.val().role;
+        sessionStorage.setItem("role", role);
+        sessionStorage.setItem("uid", uid);
+        if (role === "admin") {
+          window.location.href = "admin_dashboard.html";
+        } else {
+          window.location.href = "dashboard.html";
+        }
+      } catch (error) {
+        document.getElementById("login-message").innerText = "Incorrect email or password!";
+      }
+    });
+    </script>
+</body>
+
+</html>

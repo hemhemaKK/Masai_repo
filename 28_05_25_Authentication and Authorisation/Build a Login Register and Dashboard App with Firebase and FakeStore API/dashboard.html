@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboardent</title>
+    <style>
+        * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+      background-color: #4a90e2;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #logout-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    #logout-container h3 {
+      font-weight: normal;
+    }
+
+    #logout-btn {
+      padding: 8px 16px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #logout-btn:hover {
+      background-color: #c0392b;
+    }
+
+    #container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 30px;
+    }
+
+    .productCard {
+      background-color: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .productCard:hover {
+      transform: translateY(-5px);
+    }
+
+    .productCard img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+
+    .productCard h2 {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    .productCard h3 {
+      color: #4a90e2;
+    }
+    </style>
+</head>
+
+<body>
+    <center>
+        <h1>Welcome to dashboard</h1>
+    </center>
+    <!-- Logout -->
+    <div id="logout-container">
+        <h3><span id="user-email"></span></h3>
+        <button id="logout-btn">Logout</button>
+    </div>
+
+    <div id="container">
+
+    </div>
+
+    <script>
+        async function fetchData() {
+            try {
+                let res = await fetch('https://fakestoreapi.com/products');
+                if (!res.ok) throw new Error("Failed to fetch products");
+                let data = await res.json();
+
+                let container = document.getElementById('container');
+                container.innerHTML = '';
+
+                data.forEach(product => {
+                    let product_card = document.createElement('div');
+                    product_card.className = 'productCard';
+                    product_card.innerHTML = `
+            <img src="${product.image}" alt="${product.title}" />
+            <h2>${product.title}</h2>
+            <h3>$${product.price}</h3>`;
+                    container.appendChild(product_card);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        fetchData();
+    </script>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+        import {
+            getAuth,
+            signOut,
+            onAuthStateChanged,
+        } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqfJUI0Orck3nDCB2Ulm-AgiZcWV92KcM",
+            authDomain: "democheck-c2d99.firebaseapp.com",
+            projectId: "democheck-c2d99",
+            storageBucket: "democheck-c2d99.appspot.com",
+            messagingSenderId: "870409634136",
+            appId: "1:870409634136:web:68bad3814e92012d7ae52d",
+            measurementId: "G-KB6RD571R1",
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener("click", () => {
+            signOut(auth)
+                .then(() => {
+                    window.location.href = "index.html"
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        });
+
+        // Handle user state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('user-email').innerText = user.email;
+            } else {
+                window.location.href = "index.html"
+            }
+        });
+    </script>
+</body>
+
+</html>

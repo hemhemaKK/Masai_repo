@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    header {
+      background-color: #4a90e2;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #logout-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    #logout-container h3 {
+      font-weight: normal;
+    }
+
+    #logout-btn {
+      padding: 8px 16px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #logout-btn:hover {
+      background-color: #c0392b;
+    }
+
+    #container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 30px;
+    }
+
+    #productList {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 40px;
+    }
+
+    .productCard {
+      background-color: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .productCard:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .productCard img {
+      width: 100%;
+      height: 180px;
+      object-fit: contain;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      background-color: #f2f2f2;
+    }
+
+    .productCard h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 10px 0;
+      color: #222;
+    }
+
+    .productCard h3 {
+      font-size: 16px;
+      color: #27ae60;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <center>
+    <h1>User DashBoard</h1>
+  </center>
+  <!-- Logout -->
+  <div id="logout-container">
+    <h2><b>WELCOME, <font color="green"> <span id="user-email"></span></font></b></span><span id="user-role"></span></h2>
+    <button id="logout-btn">Logout</button>
+  </div>
+  <ul id="productList"></ul>
+
+
+  </div>
+
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+    import {
+      getAuth,
+      signOut,
+      onAuthStateChanged,
+    } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqfJUI0Orck3nDCB2Ulm-AgiZcWV92KcM",
+      authDomain: "democheck-c2d99.firebaseapp.com",
+      databaseURL: "https://democheck-c2d99-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "democheck-c2d99",
+      storageBucket: "democheck-c2d99.firebasestorage.app",
+      messagingSenderId: "870409634136",
+      appId: "1:870409634136:web:68bad3814e92012d7ae52d",
+      measurementId: "G-KB6RD571R1"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+
+    const db = getDatabase(app);
+
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener("click", async () => {
+      await signOut(auth)
+      alert("logged out successfully")
+      window.location.href = "index.html";
+    });
+
+    if (sessionStorage.getItem("role") !== "user") {
+      window.location.href = "admin_dashboard.html";
+    }
+
+    onValue(ref(db, 'products'), (snapshot) => {
+      const productList = document.getElementById("productList");
+      productList.innerHTML = '';
+      snapshot.forEach(product => {
+        const data = product.val();
+
+        const card = document.createElement('div')
+        card.className = "productCard"
+        card.innerHTML = `
+                         <img src="${data.image}" alt="${data.title}">
+                         <h2>${data.title}</h2>
+                         <h3>${data.price}</h3>`
+
+        productList.appendChild(card);
+      });
+    });
+
+    // Handle user state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('user-email').innerText = user.email;
+      } else {
+        window.location.href = "index.html"
+      }
+    });
+  </script>
+</body>
+
+</html>
