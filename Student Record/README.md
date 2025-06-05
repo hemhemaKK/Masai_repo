@@ -16,8 +16,8 @@ This is a simple **Student Dashboard** web application built using **HTML**, **C
 ## 🛠️ Technologies Used
 
 - HTML
-- CSS (Inline)
-- Vanilla JavaScript (ES6+)
+- CSS 
+- JavaScript
 - Firebase Realtime Database (REST API)
 
 ---
