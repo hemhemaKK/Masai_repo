@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debounced User Search (Firebase)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .searchinput {
+            margin: 20px auto;
+            background-color: chocolate;
+            width: 70%;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #search {
+            padding: 10px;
+            border-radius: 10px;
+            background-color: aquamarine;
+            font-size: medium;
+            border: none;
+            width: 80%;
+        }
+
+        #userList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            width: 90%;
+            margin: auto;
+        }
+
+        .userCard {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        #gotop {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 10px 15px;
+            font-size: 16px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none; /* initially hidden */
+        }
+    </style>
+</head>
+
+<body>
+
+    <center>
+        <h1>Debounced User Search from Firebase</h1>
+    </center>
+    <div class="searchinput">
+        <input type="text" id="search" placeholder="Search users by name or email" />
+        <h3>Total keyStroke <span id="keystrokes">0</span></h3>
+        <h3>Debounce Search <span id="searchcount">0</span></h3>
+    </div>
+
+    <button id="gotop">Go Top</button>
+
+    <div id="userList"></div>
+
+    <script>
+        const keystrokes = document.getElementById("keystrokes");
+        const searchcount = document.getElementById("searchcount");
+        const goTop = document.getElementById("gotop");
+        const input = document.getElementById("search");
+        const FIREBASE_URL = "https://mockapi-6ab61-default-rtdb.asia-southeast1.firebasedatabase.app/users.json";
+
+        let debounceTimer;
+        let TotalKeys = 0;
+        let searches = 0;
+
+        function debounce(func, delay) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(func, delay);
+        }
+
+        async function fetchUsers() {
+            searches++;
+            searchcount.textContent = searches;
+
+            const query = input.value.toLowerCase();
+            const container = document.getElementById("userList");
+            container.innerHTML = "Loading...";
+
+            try {
+                const res = await fetch(FIREBASE_URL);
+                const data = await res.json();
+                container.innerHTML = "";
+
+                if (!data) {
+                    container.innerHTML = "<p>No users found in database.</p>";
+                    return;
+                }
+
+                const users = Object.values(data);
+                const filtered = users.filter(user =>
+                    user.username.toLowerCase().includes(query) ||
+                    user.email.toLowerCase().includes(query)
+                );
+
+                if (filtered.length === 0) {
+                    container.innerHTML = "<p>No matching users found.</p>";
+                    return;
+                }
+
+                filtered.forEach(user => {
+                    const card = document.createElement("div");
+                    card.className = "userCard";
+                    card.innerHTML = `<h3>${user.username}</h3><p>${user.email}</p>`;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                container.innerHTML = "<p>Error fetching users.</p>";
+                console.error(err);
+            }
+        }
+        
+        input.addEventListener("input", () => {
+            TotalKeys++;
+            keystrokes.textContent = TotalKeys;
+            debounce(fetchUsers, 1000);
+        });
+
+        let throttleScroll = false;
+
+        window.addEventListener("scroll", () => {
+            if (throttleScroll) return;
+            throttleScroll = true;
+
+            setTimeout(() => {
+                if (window.scrollY > 200) {
+                    goTop.style.display = "block";
+                } else {
+                    goTop.style.display = "none";
+                }
+                throttleScroll = false;
+            }, 500);
+        });
+
+        goTop.addEventListener("click", () => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+
+    </script>
+</body>
+
+</html>
