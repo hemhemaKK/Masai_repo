@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Dashboard with Edit/Delete</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #4a90e2;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #logout-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #fff;
+    }
+
+    #logout-btn {
+      padding: 8px 16px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #task-form {
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    #task-form input,
+    #task-form textarea,
+    #task-form button {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    #container {
+      max-width: 800px;
+      margin: 20px auto;
+    }
+
+    .task {
+      background-color: #fff;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-left: 5px solid #4a90e2;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .task h2 {
+      margin-bottom: 5px;
+    }
+
+    .task p {
+      color: #555;
+    }
+
+    .task button {
+      margin-right: 10px;
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .edit {
+      background-color: #f39c12;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .delete {
+      background-color: #c0392b;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>Task Management Dashboard</header>
+
+  <div id="logout-container">
+    <h3>Welcome, <span id="user-email"></span></h3>
+    <button id="logout-btn">Logout</button>
+  </div>
+
+  <form id="task-form">
+    <input type="text" id="title" placeholder="Task Title" required />
+    <textarea id="description" rows="4" placeholder="Task Description" required></textarea>
+    <button type="submit">Add Task</button>
+  </form>
+
+  <div id="container">
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-analytics.js";
+    import {
+      getAuth,
+      signOut,
+      onAuthStateChanged,
+    } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqfJUI0Orck3nDCB2Ulm-AgiZcWV92KcM",
+      authDomain: "democheck-c2d99.firebaseapp.com",
+      projectId: "democheck-c2d99",
+      storageBucket: "democheck-c2d99.appspot.com",
+      messagingSenderId: "870409634136",
+      appId: "1:870409634136:web:68bad3814e92012d7ae52d",
+      measurementId: "G-KB6RD571R1",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+
+    let currentUser = null;
+    let editingTaskId = null;
+
+    const titleInput = document.getElementById("title");
+    const descInput = document.getElementById("description");
+    const taskForm = document.getElementById("task-form");
+    const container = document.getElementById("container");
+
+    const fetchTasks = async () => {
+      try {
+        let res = await fetch("https://taskmanagement-5fc52-default-rtdb.asia-southeast1.firebasedatabase.app/task.json");
+        let data = await res.json();
+        container.innerHTML = '';
+
+        for (let key in data) {
+          if (data[key].user_Email === currentUser.email) {
+            let div = document.createElement('div');
+            div.className = 'task';
+            div.innerHTML = `
+              <h2>${data[key].title}</h2>
+              <p>${data[key].description}</p>
+              <small>${data[key].user_Email}</small><br/>
+              <button class="edit" data-id="${key}">Edit</button>
+              <button class="delete" data-id="${key}">Delete</button>
+            `;
+            container.appendChild(div);
+          }
+        }
+
+        attachButtonEvents();
+      } catch (err) {
+        console.error("Error fetching tasks:", err);
+      }
+    };
+
+    const attachButtonEvents = () => {
+      document.querySelectorAll(".edit").forEach(button => {
+        button.addEventListener("click", async () => {
+          const id = button.getAttribute("data-id");
+          const res = await fetch(`https://taskmanagement-5fc52-default-rtdb.asia-southeast1.firebasedatabase.app/task/${id}.json`);
+          const task = await res.json();
+
+          titleInput.value = task.title;
+          descInput.value = task.description;
+          editingTaskId = id;
+        });
+      });
+
+      document.querySelectorAll(".delete").forEach(button => {
+        button.addEventListener("click", async () => {
+          const id = button.getAttribute("data-id");
+          await fetch(`https://taskmanagement-5fc52-default-rtdb.asia-southeast1.firebasedatabase.app/task/${id}.json`, {
+            method: "DELETE"
+          });
+          fetchTasks();
+        });
+      });
+    };
+
+    taskForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const task = {
+        user_Email: currentUser.email,
+        title: titleInput.value,
+        description: descInput.value
+      };
+
+      if (editingTaskId) {
+        await fetch(`https://taskmanagement-5fc52-default-rtdb.asia-southeast1.firebasedatabase.app/task/${editingTaskId}.json`, {
+          method: "PUT",
+          body: JSON.stringify(task),
+          headers: { "Content-Type": "application/json" }
+        });
+        editingTaskId = null;
+      } else {
+        await fetch("https://taskmanagement-5fc52-default-rtdb.asia-southeast1.firebasedatabase.app/task.json", {
+          method: "POST",
+          body: JSON.stringify(task),
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
+      titleInput.value = '';
+      descInput.value = '';
+      fetchTasks();
+    });
+
+    document.getElementById('logout-btn').addEventListener("click", () => {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      }).catch((error) => {
+        alert(error.message);
+      });
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById("user-email").innerText = user.email;
+        fetchTasks();
+      } else {
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+</body>
+
+</html>
