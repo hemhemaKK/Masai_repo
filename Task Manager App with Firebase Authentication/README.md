@@ -19,20 +19,14 @@ link - (https://spiffy-kelpie-5fb12d.netlify.app/)
 - **Task Management (after login):**
   - Add new tasks (title, description).
   - View tasks created by the logged-in user.
-  - Mark tasks as complete.
   - Edit tasks.
   - Delete tasks.
-  - Uses HTTP methods (`POST`, `GET`, `PATCH`, `DELETE`) via `fetch()` to a mock API or local JSON server.
+  - Uses HTTP methods (`POST`, `GET`, `PATCH`, `DELETE`) via `fetch()` to firebasedatabase JSON server.
 
 - **Authorization:**
   - Only logged-in users can access the Task Manager page.
   - Redirect unauthorized users to login.
-
-- **UI & Styling:**
-  - Basic CSS or frameworks like Bootstrap/Tailwind.
-  - Tasks displayed in card/list view.
-  - Loading indicators during fetch/update operations.
-
+  - 
 ---
 
 ## Tech Stack
