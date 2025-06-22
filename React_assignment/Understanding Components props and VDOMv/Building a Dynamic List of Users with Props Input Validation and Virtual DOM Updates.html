@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List validation</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        #root{
+            margin: auto;
+            width: 80%;
+        }
+        .userCard {
+            margin: 10px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        .error {
+            color: red;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        input {
+            display: block;
+            margin: 5px 0;
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root">React is not connected
+    </div>
+</body>
+
+</html>
+
+<script type="text/babel">
+
+    const { useState } = React;
+
+    function UserCard({ name, email, age }) {
+        return (
+            <div className="userCard">
+                <h3>Name: {name}</h3>
+                <p>Email: {email}</p>
+                <p>Age: {age}</p>
+            </div>
+        );
+    }
+
+    function UserList({ users }) {
+        return (
+            <div>
+                {users.map((user, index) => (
+                    <UserCard key={index} {...user} />
+                ))}
+            </div>
+        );
+    }
+
+    function App() {
+        const [users, setUsers] = useState([
+            { name: "Hema", email: "hem@gmail.com", age: 23 },
+            { name: "Sanjay", email: "Sanju@gmail.com", age: 24 },
+            { name: "Divya", email: "divya@gmail.com", age: 23 },
+
+        ]);
+
+        const [form, setForm] = useState({ name: '', email: '', age: '' })
+        const [errors, setErrors] = useState({});
+
+        const validate = () => {
+            const err = {};
+            if (!form.name.trim()) errs.name = "Name is required";
+            if (!/^\S+@\S+\.\S+$/.test(form.email)) errs.email = "Invalid email format.";
+            if (!form.age || isNaN(form.age) || form.age <= 0) errs.age = "Age must be a positive number.";
+            return err;
+        };
+
+        const handleChange = (e) => {
+            setForm({ ...form, [e.target.name]: e.target.value });
+        };
+
+        const handleSubmit = (e) => {
+            e.preventDefault();
+            const validationErrors = validate();
+            if (Object.keys(validationErrors).length == 0) {
+                setUsers([...users, { ...form, age: Number(form.age) }]);
+                setForm({ name: '', email: '', age: '' });
+                setErrors({});
+            }
+            else
+                setErrors(validationErrors);
+        }
+
+        return (
+            <div>
+                <h2>Add New User</h2>
+                <form onSubmit={handleSubmit}>
+                    <input name="name" placeholder="Name" value={form.name} onChange={handleChange} />
+                    {errors.name && <div className="error">{errors.name}</div>}
+
+                    <input name="email" placeholder="Email" value={form.email} onChange={handleChange} />
+                    {errors.email && <div className="error">{errors.email}</div>}
+
+                    <input name="age" placeholder="Age" value={form.age} onChange={handleChange} />
+                    {errors.age && <div className="error">{errors.age}</div>}
+
+                    <button type="submit">Add User</button>
+                </form>
+
+                <h2>User List</h2>
+                <UserList users={users} />
+            </div>
+        )
+    }
+
+    let root = ReactDOM.createRoot(document.getElementById('root'))
+    root.render(<App />)
+</script>
