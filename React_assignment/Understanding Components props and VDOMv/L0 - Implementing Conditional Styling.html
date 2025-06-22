@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implementing conitional Styling</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <style>
+        button{
+            padding: 20px;
+            font-size: larger;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            margin-left: 20px;
+        }
+        span{
+            font-size: larger;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+        <h1>Implementing conitional Styling</h1>
+
+        <div id="Container">
+            <span id="count">Initial</span>
+            <button id="color-btn">Change Colour</button>
+        </div>
+
+    </center>
+</body>
+
+</html>
+<script>
+    //DOM
+    let count = 0
+    let container = document.getElementById("count");
+    let button = document.getElementById("color-btn")
+
+    document.getElementById('color-btn').addEventListener('click', () => {
+        count++
+        if(count%2 == 0){
+        container.innerText = "Green";
+        button.style.backgroundColor = "green"
+        }
+        else{
+            container.innerText = "Yellow";
+             button.style.backgroundColor = "yellow"
+        }
+    })
+</script>

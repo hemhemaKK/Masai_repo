@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+    #root{
+        margin: auto;
+        width: 50%;
+        background-color: rgb(101, 82, 58);
+        padding: 10px;
+    }
+    #blogs button{
+        margin: 10px;
+        padding: 10px;
+        border: none;
+        background-color: rgb(255, 255, 255);
+        font-size: larger;
+        font-weight: bold;
+        border-radius: 10px;
+    }
+    h2{
+        text-align: center;
+        color: aliceblue;
+        font-size: 24px;
+        font-weight: bold;
+    }
+    li{
+        list-style-type: none;
+    }
+
+    p{
+        background-color: aquamarine;
+        padding: 10px;
+        font-weight: bold;
+    }
+
+</style>
+</head>
+
+<body>
+    <div id="root">
+        <h1>React connection failed</h1>
+    </div>
+
+</body>
+</html>
+
+<script type="text/babel">
+    const {useState} = React;
+
+    function Blogs(){
+    const [blogs, setBlogs] = useState([
+  { title: "Mastering JavaScript", content: "JavaScript is a powerful language for web development." },
+  { title: "React in Indian Startups", content: "React is widely used in many Indian tech companies." },
+  { title: "Career in Web Development", content: "Explore job roles and growth in web development." },
+]);
+  
+const toggleContent=(index)=>{
+    const updatedBlogs = blogs.map((blog, i)=>
+      i==index? {...blog, show: !blog.show}:blog);
+      setBlogs(updatedBlogs)
+};
+
+    return (
+        <div id="blogs">
+            <h2>Books</h2>
+            <ul>
+                {blogs.map((blog, index)=>(
+                    <li key={index}>
+                    <button onClick={()=>toggleContent(index)}>Title: {blog.title}</button>
+                    {blog.show && <p>Content: {blog.content}</p>}</li>
+                ))}
+            </ul>
+        </div>
+    );
+    
+    }
+
+let root = ReactDOM.createRoot(document.getElementById('root'))
+root.render(<Blogs/>)
+
+</script>
