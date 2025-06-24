@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <style>
+    #root {
+      margin: auto;
+      width: 60%;
+    }
+
+    button {
+      padding: 5px;
+      background-color: rgb(0, 41, 188);
+      border: none;
+      border-radius: 10px;
+      font-size: large;
+      font-weight: bold;
+      color: white;
+      margin: 10px 0 10px 40px;
+    }
+
+
+
+    .filters {
+      margin: 20px 0;
+    }
+
+    .filters select {
+      margin-right: 20px;
+    }
+
+    li {
+      list-style-type: none;
+      float: left;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root">React is not connected</div>
+</body>
+
+</html>
+
+<script type="text/babel">
+  const { useState } = React;
+
+  function App() {
+    const [attendence, setAttendence] = useState([{
+      id: 1,
+      name: "Hema",
+      present: true
+    },
+    {
+      id: 2,
+      name: "Sanju",
+      present: true
+    },
+    {
+      id: 3,
+      name: "Divya",
+      present: false
+    },
+    {
+      id: 4,
+      name: "Raji",
+      present: true
+    }
+    ]);
+
+    //apply filter
+    const [filterStatus, setFilterStatus] = useState('all');
+
+
+    const toggleTask = (id) => {
+      const updatedTask = attendence.map(task => task.id == id ? { ...task, present: !task.present } : task)
+      setAttendence(updatedTask);
+    };
+
+
+    const filteredTask = attendence.filter(task => {
+      const matchStatus = filterStatus === 'all' || (filterStatus === 'present' && task.present) || (filterStatus === 'absent' && !task.present);
+      return matchStatus;
+    })
+
+    return (
+      <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+        <h2>Attendence Management</h2>
+
+        <br /><br />
+        <div className="filters">
+
+
+          <label>Status Filter: </label>
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+            <option value="all">All</option>
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+          </select>
+        </div>
+
+        {filteredTask.length === 0 ? (<p>No attendence Match the filter.</p>) : 
+          (<table border="1" cellPadding="10" cellSpacing="0" style={{ width: "100%", textAlign: "left" }}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Toggle</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTask.map(task => (
+              <tr key={task.id}>
+                <td>{task.id}</td>
+                <td>{task.name}</td>
+                <td style={{ color: task.present ? 'green' : 'red' }}>
+                  {task.present ? 'Present' : 'Absent'}
+                </td>
+                <td>
+                  <button onClick={() => toggleTask(task.id)}>Change</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        )}
+      </div>
+    );       
+}
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<App />);
+</script>
