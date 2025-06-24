@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+        #root{
+            margin: auto;
+            width: 50%;
+        }
+        .task {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    button{
+        padding: 10px;
+        background-color: rgb(0, 41, 188);
+        border: none;
+        border-radius: 10px;
+        font-size: large;
+        font-weight: bold;
+        color: white;
+    }
+
+    .high {
+      background: #ffe5e5;
+      border-left: 5px solid red;
+    }
+
+    .medium {
+      background: #fff3cd;
+      border-left: 5px solid orange;
+    }
+
+    .low {
+      background: #e2f7e1;
+      border-left: 5px solid green;
+    }
+
+    .filters {
+      margin: 15px 0;
+    }
+
+    .filters select {
+      margin-right: 10px;
+    }
+
+    button {
+      margin-left: 10px;
+    }
+    </style>
+</head>
+
+<body>
+        <div id="root">React is not connected</div>
+</body>
+
+</html>
+
+<script type="text/babel">
+    const {useState} = React;
+
+    function TodoApp(){
+        const [tasks, setTasks] = useState([]);
+        const [value, setValue] = useState('');
+        const [priority, setPriority] = useState('');
+
+        //apply filter
+        const [filterPriority, setFilterPriority] = useState('all');
+        const [filterStatus, setFilterStatus] = useState('all');
+
+        const priorityOrder = {high:3, medium:2, low:1};
+
+
+        const addTask = ()=>{
+            if(value.trim() === '') return; //used to prevent the empty task
+
+            const newTask={
+                id:Date.now(),
+                text:value.trim(),
+                priority:priority||'low',
+                completed:false,
+            };
+            
+            const updatedTask = [...tasks, newTask].sort((a,b)=>priorityOrder[b.priority]-priorityOrder[a.priority]);
+            setTasks(updatedTask);
+            setValue('');
+            setPriority('medium');
+        };
+
+        const toggleTask = (id)=>{
+            const updatedTask = tasks.map(task=>task.id == id? {...task, completed:!task.completed}:task) .sort((a,b)=>priorityOrder[b.priority]-priorityOrder[a.priority]);
+            setTasks(updatedTask);
+        };
+
+        const deleteTask = (id)=>{
+            setTasks(tasks.filter(task=> task.id !== id)) //deleting using unique id which we created above
+        }
+
+        const filteredTask = tasks.filter(task=>{
+            const matchpriority = filterPriority === 'all' || task.priority === filterPriority;
+            const matchStatus = filterStatus === 'all' || (filterStatus === 'completed' && task.completed) || (filterStatus === 'incomplete' && !task.completed);
+
+            return matchpriority && matchStatus;
+        })
+
+        return (
+        <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+          <h2>Advance Task Management</h2>
+          <input
+            type="text"
+            placeholder="Enter a task"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+          /><hr/>
+          <select value={priority} onChange={(e)=>setPriority(e.target.value)}>
+            <option value="">Select Priority</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+        </select><hr/>
+          <button onClick={addTask}>Add Task</button>
+          <br/><br/>
+          <div className="filters">
+            <label>Priority Filter: </label>
+            <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
+              <option value="all">All</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+
+            <label>Status Filter: </label>
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+              <option value="all">All</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
+            </select>
+          </div>
+
+          <ul>
+            {filteredTask.length === 0 && <p>No Tasks Match the filter.</p>}
+            {filteredTask.map(task => (
+              <li key={task.id}
+                  className = {`task ${task.priority}`}>
+                <span
+                  onClick={() => toggleTask(task.id)}
+                  style={{
+                    textDecoration: task.completed ? 'line-through' : 'none',
+                    cursor: 'pointer',
+                    marginRight: '10px'
+                  }}
+                ><hr/>
+                  {task.text}<strong> ({task.priority.toUpperCase()})</strong>
+                </span>
+                <button onClick={() => deleteTask(task.id)}>Delete</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+
+     const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<TodoApp />);
+</script>
